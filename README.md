@@ -57,7 +57,7 @@ Check out our official YouTube channel for demos, updates, and translation showc
   ```bash
   pip install pymupdf pdfminer.six beautifulsoup4 ebooklib
 Installation
-git clone https://github.com/ayoubaydy/tajruba.git
+git clone https://github.com/ayoubaydy/tajreba.git
 cd tajruba
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate

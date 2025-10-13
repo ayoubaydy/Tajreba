@@ -1,6 +1,6 @@
 # Tajruba
 
-**Tajruba** is a professional **book and document translation tool** powered by **local large language models (LLMs)** through [Ollama](https://ollama.ai).  
+**Tajreba** is a professional **book and document translation tool** powered by **local large language models (LLMs)** through [Ollama](https://ollama.ai).  
 It enables accurate, refined English-to-Arabic translation for books, e-books, and documents — **securely, privately, and offline**.
 
 ---
@@ -10,7 +10,7 @@ It enables accurate, refined English-to-Arabic translation for books, e-books, a
 The idea for **Tajreba** was born from the widening gap in **modern Arabic translations**.  
 Many of today’s **scientific, literary, and cultural works** from the West either never reach Arabic readers or take years to do so — often due to **publishing restrictions**, **licensing barriers**, or **limited translation initiatives** across the Arab world.  
 
-**Tajruba** was created to help **bridge that gap**, giving individuals, researchers, and readers direct access to global knowledge in their native language — **freely, locally, and instantly**.
+**Tajreba** was created to help **bridge that gap**, giving individuals, researchers, and readers direct access to global knowledge in their native language — **freely, locally, and instantly**.
 
 ---
 
@@ -73,7 +73,7 @@ Then open your browser and visit:
 💡 Why Tajreba?
 
 Because access to knowledge shouldn’t be bound by geography or publishing limitations.
-Tajruba is a step toward a more inclusive Arabic digital library, enabling independent translators and curious minds to bring the world’s newest ideas home — in their own language.
+Tajreba is a step toward a more inclusive Arabic digital library, enabling independent translators and curious minds to bring the world’s newest ideas home — in their own language.
 
 
-Tajruba — Translating knowledge, preserving meaning. Locally.
+Tajreba — Translating knowledge, preserving meaning. Locally.

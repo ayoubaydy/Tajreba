@@ -75,16 +75,5 @@ Then open your browser and visit:
 Because access to knowledge shouldn’t be bound by geography or publishing limitations.
 Tajruba is a step toward a more inclusive Arabic digital library, enabling independent translators and curious minds to bring the world’s newest ideas home — in their own language.
 
-🤝 Contributing
-
-Contributions are welcome!
-Please see CONTRIBUTING.md
- for details on how to submit issues or pull requests.
-
-📜 License
-
-Distributed under the MIT License.
-See LICENSE
- for more information.
 
 Tajruba — Translating knowledge, preserving meaning. Locally.

@@ -34,7 +34,7 @@ Tajruba aims to **bridge that gap**, empowering individuals, researchers, and re
   ```bash
   pip install pymupdf pdfminer.six beautifulsoup4 ebooklib
 Installation
-git clone https://github.com/yourusername/tajruba.git
+git clone https://github.com/ayoubaydy/tajruba.git
 cd tajruba
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate

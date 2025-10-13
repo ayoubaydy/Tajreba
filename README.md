@@ -88,7 +88,3 @@ See LICENSE
  for more information.
 
 Tajruba — Translating knowledge, preserving meaning. Locally.
-
----
-
-Would you like me to add a short **tagline + badges section** (like “Built with Python • Powered by Ollama • MIT License”) at the top for a more polished GitHub appearance?

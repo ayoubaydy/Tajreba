@@ -7,12 +7,35 @@ It enables accurate, refined English-to-Arabic translation for books, e-books, a
 
 ## 🌍 Inspiration
 
-The idea for **Tajruba** was born from a growing gap in **modern Arabic translations**.  
-Many of the latest **scientific, literary, and cultural works** in the West never reach Arabic readers — often due to **publishing restrictions** or **limited translation rights** in the Arab world.  
+The idea for **Tajreba** was born from the widening gap in **modern Arabic translations**.  
+Many of today’s **scientific, literary, and cultural works** from the West either never reach Arabic readers or take years to do so — often due to **publishing restrictions**, **licensing barriers**, or **limited translation initiatives** across the Arab world.  
 
-Tajruba aims to **bridge that gap**, empowering individuals, researchers, and readers to access global knowledge in their native language — **freely and locally**.
+**Tajruba** was created to help **bridge that gap**, giving individuals, researchers, and readers direct access to global knowledge in their native language — **freely, locally, and instantly**.
 
 ---
+
+## 🎥 Watch Tajreba in Action
+
+Check out our official YouTube channel for demos, updates, and translation showcases:  
+▶️ [@Tajrebah on YouTube](https://www.youtube.com/@Tajrebah)
+
+---
+
+## ⚙️ How It Works
+
+1. **Download Ollama**  
+   Install [Ollama](https://ollama.ai) to run language models locally on your machine.  
+
+2. **Choose Your Arabic Model**  
+   We recommend using **`CohereLabs/c4ai-command-r7b`** for high-quality and up-to-date Arabic translations (tested and verified for accuracy).  
+   If you test other models and find better results, feel free to **contribute your findings** to improve Tajruba’s recommendations.
+
+3. **Translate Your Book or Document**  
+   Import your English e-book or document into **Tajruba**, select your preferred **LLM model**, and start the translation process.  
+   Watch as your text is **translated live** into polished, publication-ready Arabic — fully offline.
+
+---
+
 
 ## ✨ Features
 
@@ -47,7 +70,7 @@ python app.py
 Then open your browser and visit:
 👉 http://127.0.0.1:7860
 
-💡 Why Tajruba?
+💡 Why Tajreba?
 
 Because access to knowledge shouldn’t be bound by geography or publishing limitations.
 Tajruba is a step toward a more inclusive Arabic digital library, enabling independent translators and curious minds to bring the world’s newest ideas home — in their own language.

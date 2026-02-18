@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tajreba — AI Book Translator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ─── Reset & Root ──────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #07090f;
+            --bg-surf: #0d1121;
+            --bg-card: #111527;
+            --bg-input: #171d30;
+            --bg-hover: #1e2540;
+            --b: rgba(90, 110, 255, .13);
+            --b-glow: rgba(90, 110, 255, .4);
+            --acc: #5a6eff;
+            --acc2: #a78bfa;
+            --acc-glow: rgba(90, 110, 255, .22);
+            --green: #34d399;
+            --red: #f87171;
+            --yellow: #fbbf24;
+            --t1: #eef0ff;
+            --t2: #7e8bb5;
+            --t3: #3d4668;
+            --r: 13px;
+            --rl: 18px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--t1);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* animated grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(90, 110, 255, .04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(90, 110, 255, .04) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridDrift 30s linear infinite;
+        }
+
+        @keyframes gridDrift {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 44px 44px;
+            }
+        }
+
+        /* floating orbs */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: -200px;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(90, 110, 255, .07) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: orbFloat 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes orbFloat {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(120px, 80px);
+            }
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 28px 60px;
+        }
+
+        /* ─── Header ────────────────────────────────────────────────── */
+        header {
+            text-align: center;
+            padding: 56px 0 44px;
+            animation: fadeDown .7s ease both;
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .logo-icon {
+            width: 70px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--acc), var(--acc2));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 24px var(--acc-glow);
+            flex-shrink: 0;
+        }
+
+        .logo-icon svg {
+            display: block;
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.9rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            background: linear-gradient(130deg, #fff 35%, var(--acc2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(90, 110, 255, .1);
+            border: 1px solid var(--b-glow);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: .78rem;
+            color: var(--acc2);
+            font-weight: 500;
+            letter-spacing: .5px;
+            margin-bottom: 12px;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .4;
+            }
+        }
+
+        .subtitle {
+            color: var(--t2);
+            font-size: .95rem;
+            font-weight: 300;
+        }
+
+        /* ─── Layout ────────────────────────────────────────────────── */
+        .layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 20px;
+            align-items: start;
+            animation: fadeUp .7s .15s ease both;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ─── Cards ─────────────────────────────────────────────────── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--b);
+            border-radius: var(--rl);
+            padding: 22px 22px 24px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color .3s;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(90, 110, 255, .5), transparent);
+        }
+
+        .card:hover {
+            border-color: var(--b-glow);
+        }
+
+        .card+.card {
+            margin-top: 16px;
+        }
+
+        /* ─── Section Labels ─────────────────────────────────────────── */
+        .sec-label {
+            font-family: 'Syne', sans-serif;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: 2.2px;
+            text-transform: uppercase;
+            color: var(--acc);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sec-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--b);
+        }
+
+        /* ─── Upload Zone ─────────────────────────────────────────────── */
+        .upload-zone {
+            border: 2px dashed var(--b-glow);
+            border-radius: var(--r);
+            background: var(--bg-input);
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(90, 110, 255, .05) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--acc);
+            background: rgba(90, 110, 255, .05);
+            box-shadow: 0 0 40px rgba(90, 110, 255, .15);
+        }
+
+        .upload-zone:hover::before {
+            opacity: 1;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(90, 110, 255, .12);
+            border: 1px solid var(--b-glow);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+            transition: transform .3s, box-shadow .3s;
+        }
+
+        .upload-zone:hover .upload-icon {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px var(--acc-glow);
+        }
+
+        .upload-icon svg {
+            color: var(--acc);
+        }
+
+        .upload-title {
+            font-weight: 600;
+            font-size: .95rem;
+            margin-bottom: 4px;
+        }
+
+        .upload-sub {
+            color: var(--t2);
+            font-size: .8rem;
+        }
+
+        .upload-types {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 14px;
+        }
+
+        .tag {
+            background: rgba(90, 110, 255, .1);
+            border: 1px solid var(--b-glow);
+            border-radius: 6px;
+            padding: 3px 9px;
+            font-size: .72rem;
+            color: var(--acc2);
+            font-weight: 500;
+        }
+
+        /* ─── Select ──────────────────────────────────────────────────── */
+        .field-label {
+            font-size: .78rem;
+            color: var(--t2);
+            font-weight: 500;
+            margin-bottom: 7px;
+        }
+
+        .select-wrap {
+            position: relative;
+        }
+
+        .select-wrap select {
+            width: 100%;
+            appearance: none;
+            background: var(--bg-input);
+            border: 1px solid var(--b);
+            border-radius: var(--r);
+            color: var(--t1);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .88rem;
+            padding: 11px 36px 11px 14px;
+            cursor: pointer;
+            transition: border-color .2s, box-shadow .2s;
+            outline: none;
+        }
+
+        .select-wrap select:hover {
+            border-color: var(--b-glow);
+        }
+
+        .select-wrap select:focus {
+            border-color: var(--acc);
+            box-shadow: 0 0 0 3px var(--acc-glow);
+        }
+
+        .select-arrow {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--t3);
+        }
+
+        /* ─── Buttons ─────────────────────────────────────────────────── */
+        .btn {
+            width: 100%;
+            border: none;
+            border-radius: var(--r);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .9rem;
+            font-weight: 600;
+            padding: 12px 18px;
+            cursor: pointer;
+            transition: all .25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--acc) 0%, #8b5cf6 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(90, 110, 255, .35);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, .15), transparent);
+            opacity: 0;
+            transition: opacity .2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(90, 110, 255, .5);
+        }
+
+        .btn-primary:hover::after {
+            opacity: 1;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            border: 1px solid var(--b);
+            color: var(--t2);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--b-glow);
+            color: var(--t1);
+            background: var(--bg-hover);
+        }
+
+        .btn-danger {
+            background: rgba(248, 113, 113, .08);
+            border: 1px solid rgba(248, 113, 113, .25);
+            color: var(--red);
+        }
+
+        .btn-danger:hover {
+            background: rgba(248, 113, 113, .18);
+            border-color: var(--red);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669, var(--green));
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(52, 211, 153, .25);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(52, 211, 153, .45);
+        }
+
+        /* ─── Accordion ───────────────────────────────────────────────── */
+        details {
+            background: var(--bg-input);
+            border: 1px solid var(--b);
+            border-radius: var(--r);
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        summary {
+            padding: 13px 16px;
+            cursor: pointer;
+            font-size: .85rem;
+            color: var(--t2);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            list-style: none;
+            transition: color .2s;
+            user-select: none;
+        }
+
+        summary:hover {
+            color: var(--t1);
+        }
+
+        summary::after {
+            content: '▾';
+            margin-left: auto;
+            font-size: .8rem;
+            transition: transform .25s;
+        }
+
+        details[open] summary::after {
+            transform: rotate(180deg);
+        }
+
+        details[open] summary {
+            color: var(--t1);
+            border-bottom: 1px solid var(--b);
+        }
+
+        .acc-body {
+            padding: 18px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* ─── Form fields ─────────────────────────────────────────────── */
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .field input[type=number],
+        .field input[type=range] {
+            background: var(--bg-card);
+            border: 1px solid var(--b);
+            border-radius: 9px;
+            color: var(--t1);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .87rem;
+            padding: 9px 12px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .field input[type=number]:focus {
+            border-color: var(--acc);
+            box-shadow: 0 0 0 3px var(--acc-glow);
+        }
+
+        .field input[type=range] {
+            padding: 0;
+            height: 6px;
+            accent-color: var(--acc);
+            cursor: pointer;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: .85rem;
+            color: var(--t2);
+        }
+
+        .checkbox-row input {
+            accent-color: var(--acc);
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+
+        /* ─── Right column ────────────────────────────────────────────── */
+        .right-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ─── Progress card ───────────────────────────────────────────── */
+        .progress-track {
+            background: var(--bg-input);
+            border-radius: 100px;
+            height: 9px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            border: 1px solid var(--b);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--acc), var(--acc2));
+            border-radius: 100px;
+            box-shadow: 0 0 14px var(--acc-glow);
+            transition: width .6s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .stat-box {
+            background: var(--bg-input);
+            border: 1px solid var(--b);
+            border-radius: var(--r);
+            padding: 12px 14px;
+            transition: border-color .2s;
+        }
+
+        .stat-box:hover {
+            border-color: var(--b-glow);
+        }
+
+        .stat-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--t1);
+        }
+
+        .stat-key {
+            font-size: .72rem;
+            color: var(--t3);
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ─── Status box ──────────────────────────────────────────────── */
+        .status-area {
+            background: var(--bg-input);
+            border: 1px solid var(--b);
+            border-radius: var(--r);
+            padding: 14px 16px;
+            font-size: .85rem;
+            color: var(--t2);
+            line-height: 1.7;
+            min-height: 70px;
+            font-style: italic;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: var(--green);
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 8px var(--green);
+            animation: pulse 2s ease-in-out infinite;
+            vertical-align: middle;
+        }
+
+        /* ─── Output box ──────────────────────────────────────────────── */
+        .output-area {
+            background: var(--bg-input);
+            border: 1px solid var(--b);
+            border-radius: var(--r);
+            padding: 16px;
+            min-height: 300px;
+            font-size: .87rem;
+            color: var(--t3);
+            line-height: 1.8;
+            font-style: italic;
+            position: relative;
+            overflow: hidden;
+            resize: vertical;
+        }
+
+        .output-area::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(to top, var(--bg-input), transparent);
+            pointer-events: none;
+        }
+
+        .cursor-blink {
+            display: inline-block;
+            width: 2px;
+            height: 14px;
+            background: var(--acc);
+            border-radius: 2px;
+            animation: blink 1.1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* ─── Footer ──────────────────────────────────────────────────── */
+        footer {
+            text-align: center;
+            padding: 32px 0 0;
+            color: var(--t3);
+            font-size: .78rem;
+            border-top: 1px solid var(--b);
+            margin-top: 40px;
+        }
+
+        footer span {
+            color: var(--acc);
+        }
+
+        /* ─── Scrollbar ───────────────────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-hover);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--acc);
+        }
+
+        /* ─── Spacers ─────────────────────────────────────────────────── */
+        .sp8 {
+            height: 8px;
+        }
+
+        .sp12 {
+            height: 12px;
+        }
+
+        .sp16 {
+            height: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+
+        <!-- ── Header ── -->
+        <header>
+            <div class="logo-row">
+                <div class="logo-icon">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"
+                        style="width:50px; height:auto; filter: brightness(0) invert(1);">
+                </div>
+                <h1>Tajreba</h1>
+            </div>
+            <div class="badge"><span class="badge-dot"></span>Designed and Developed by &nbsp;<a
+                    href="https://www.baydy.art" target="_blank"
+                    style="text-decoration:none; color:inherit;">www.baydy.art</a></div>
+            <p class="subtitle">Translate books in minutes fully offline and completely private.
+                <br>All your eBooks. All formats. One powerful translator. DOCX · PDF · EPUB · TXT · HTML with precision
+            </p>
+        </header>
+
+        <!-- ── Main Layout ── -->
+        <div class="layout">
+
+            <!-- ╔══ LEFT COLUMN ══╗ -->
+            <div class="left-col">
+
+                <!-- Upload -->
+                <div class="card">
+                    <div class="sec-label">📄 Document</div>
+                    <div class="upload-zone" id="uploadZone" onclick="triggerUpload()">
+                        <div class="upload-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                style="color:var(--acc)">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                        </div>
+                        <div class="upload-title">Drop File Here</div>
+                        <div class="upload-sub">— or click to upload —</div>
+                        <div class="upload-types">
+                            <span class="tag">.docx</span>
+                            <span class="tag">.pdf</span>
+                            <span class="tag">.epub</span>
+                            <span class="tag">.txt</span>
+                            <span class="tag">.html</span>
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" accept=".docx,.pdf,.epub,.txt,.html" style="display:none"
+                        onchange="fileChosen(this)" />
+                </div>
+
+                <!-- Model Select -->
+                <div class="card">
+                    <div class="sec-label">🤖 LLM Model</div>
+                    <div class="select-wrap">
+                        <select>
+                            <option>Maoyue/c4ai-command-r7b-12-2024:latest</option>
+                            <option>llama3.2:latest</option>
+                            <option>mistral:latest</option>
+                            <option>gemma2:9b</option>
+                            <option>qwen2.5:14b</option>
+                            <option>deepseek-r1:8b</option>
+                        </select>
+                        <span class="select-arrow">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="card">
+                    <div class="sec-label">⚡ Controls</div>
+                    <button class="btn btn-primary" onclick="startTranslation()"
+                        style="width:100%; margin-bottom:10px;">
+                        🚀&nbsp; Start Translation
+                    </button>
+                    <div class="btn-row">
+                        <button class="btn btn-secondary" onclick="pauseTranslation()">⏸&nbsp; Pause</button>
+                        <button class="btn btn-danger" onclick="stopTranslation()">⏹&nbsp; Stop</button>
+                    </div>
+                    <div class="sp8"></div>
+                    <button class="btn btn-success" onclick="exportDoc()" style="width:100%;">
+                        ⬇&nbsp; Export &amp; Download
+                    </button>
+                </div>
+
+                <!-- Advanced Options -->
+                <details>
+                    <summary>⚙&nbsp; Advanced Options</summary>
+                    <div class="acc-body">
+                        <div class="field">
+                            <div class="field-label">Chunk Size (paragraphs)</div>
+                            <input type="number" value="3" min="1" max="20" />
+                        </div>
+                        <div class="field">
+                            <div class="field-label">Temperature &nbsp;<span id="tempVal"
+                                    style="color:var(--acc);font-weight:600">0.30</span></div>
+                            <input type="range" min="0" max="1" step="0.05" value="0.3"
+                                oninput="document.getElementById('tempVal').textContent=parseFloat(this.value).toFixed(2)" />
+                        </div>
+                        <div class="field">
+                            <div class="field-label">Max Retries</div>
+                            <input type="number" value="3" min="1" max="10" />
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="keepFmt" checked />
+                            <label for="keepFmt">Preserve original formatting</label>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="rtlOut" checked />
+                            <label for="rtlOut">Force RTL output (Arabic)</label>
+                        </div>
+                    </div>
+                </details>
+
+            </div><!-- end left -->
+
+            <!-- ╔══ RIGHT COLUMN ══╗ -->
+            <div class="right-col">
+
+                <!-- Progress -->
+                <div class="card">
+                    <div class="sec-label">📊 Translation Progress</div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <div class="stat-val" id="statPct">0<span style="font-size:.9rem;color:var(--t2)">%</span>
+                            </div>
+                            <div class="stat-key">Progress</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-val" id="statDone">0</div>
+                            <div class="stat-key">Chunks Done</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-val" id="statTotal">—</div>
+                            <div class="stat-key">Total Chunks</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-val" id="statTime">00:00</div>
+                            <div class="stat-key">Elapsed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="card">
+                    <div class="sec-label">💬 Status &amp; System Info</div>
+                    <div class="status-area" id="statusBox">
+                        <span class="status-dot"></span>
+                        Ready to translate — upload a document and press <strong style="color:var(--t1)">Start
+                            Translation</strong>.
+                    </div>
+                </div>
+
+                <!-- Live Output -->
+                <div class="card">
+                    <div class="sec-label">📝 Live Translation Output</div>
+                    <div class="output-area" id="outputBox" dir="auto">
+                        Translation output will stream here in real-time…<span class="cursor-blink"></span>
+                    </div>
+                </div>
+
+            </div><!-- end right -->
+        </div><!-- end layout -->
+
+        <footer
+            style="display:flex; flex-direction:column; gap:12px; align-items:center; padding-bottom:40px; margin-top:60px; border-top:1px solid var(--b); padding-top:32px;">
+
+            <!-- Tagline -->
+            <div>
+                Tajreba &nbsp;·&nbsp; <span>Local-first AI translation</span> &nbsp;·&nbsp; No data leaves your machine
+            </div>
+
+            <!-- Baydy Branding -->
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="color:var(--t2); font-size:0.8rem;">Designed & Developed by</span>
+                <a href="https://www.baydy.art" target="_blank"
+                    style="display:flex; align-items:center; gap:6px; text-decoration:none; color:var(--acc2); font-weight:600; font-size:0.9rem;">
+                    <img src="https://baydy.art/IMG/BAYDY.svg"
+                        style="height:16px; width:auto; filter: brightness(0) invert(1);" alt="Baydy Art">
+                    www.baydy.art
+                </a>
+            </div>
+
+            <!-- Sample Link with YouTube Icon -->
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="color:var(--t2); font-size:0.8rem;">Check the sample powered by this script:</span>
+                <a href="https://www.youtube.com/@Tajrebah" target="_blank"
+                    style="color:#ff5555; display:flex; align-items:center; gap:5px; text-decoration:none; font-weight:500;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path
+                            d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                    </svg>
+                    @Tajrebah
+                </a>
+            </div>
+
+        </footer>
+    </div>
+
+    <!-- ── Demo Interactions ── -->
+    <script>
+        const API_BASE = '/api';
+
+        // State
+        let currentFile = null;
+        let pollInterval = null;
+        let isTranslationRunning = false;
+        let isPaused = false;
+
+        // --- Upload Logic ---
+        function triggerUpload() { document.getElementById('fileInput').click(); }
+
+        function fileChosen(input) {
+            if (!input.files[0]) return;
+            const file = input.files[0];
+
+            // Upload file immediately
+            const formData = new FormData();
+            formData.append('file', file);
+
+            setStatus(`⏳ Uploading <strong style="color:var(--t1)">${file.name}</strong>...`);
+
+            fetch(`${API_BASE}/upload`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        setStatus(`❌ Upload failed: ${data.error}`);
+                    } else {
+                        currentFile = data.filename;
+                        setStatus(`✅ File uploaded: <strong style="color:var(--t1)">${file.name}</strong> — Ready to start.`);
+                        document.querySelector('.upload-title').textContent = file.name;
+                        document.querySelector('.upload-sub').textContent = 'File ready ✓';
+                    }
+                })
+                .catch(err => {
+                    setStatus(`❌ Network error during upload: ${err}`);
+                });
+        }
+
+        // --- Status Helper ---
+        function setStatus(html) {
+            document.getElementById('statusBox').innerHTML = '<span class="status-dot"></span>' + html;
+        }
+
+        // --- Start Translation ---
+        function startTranslation() {
+            if (!currentFile) {
+                setStatus('⚠️ Please upload a document first.');
+                return;
+            }
+            if (isTranslationRunning) return;
+
+            // Gather config
+            const model = document.querySelector('.select-wrap select').value;
+            const chunkSize = document.querySelector('input[type=number]').value; // Assuming chunk size input is the first number input
+            const temp = document.querySelector('input[type=range]').value;
+            const keepFmt = document.getElementById('keepFmt').checked;
+            const rtlOut = document.getElementById('rtlOut').checked;
+
+            const payload = {
+                filename: currentFile,
+                model: model,
+                chunk_size: parseInt(chunkSize),
+                temperature: parseFloat(temp),
+                keep_formatting: keepFmt,
+                rtl: rtlOut
+            };
+
+            setStatus('🚀 initializing translation...');
+
+            fetch(`${API_BASE}/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        setStatus(`❌ Failed to start: ${data.error}`);
+                    } else {
+                        isTranslationRunning = true;
+                        isPaused = false;
+                        setStatus('🚀 Translation started...');
+                        document.getElementById('outputBox').innerHTML = '<span class="cursor-blink"></span>';
+                        startPolling();
+                    }
+                })
+                .catch(err => setStatus(`❌ Error starting: ${err}`));
+        }
+
+        // --- Polling ---
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/status`);
+                    const data = await res.json();
+
+                    // Update UI
+                    document.getElementById('progressFill').style.width = data.progress + '%';
+                    document.getElementById('statPct').innerHTML = data.progress + '<span style="font-size:.9rem;color:var(--t2)">%</span>';
+                    document.getElementById('statDone').textContent = data.current_chunk;
+                    document.getElementById('statTotal').textContent = data.total_chunks;
+                    document.getElementById('statTime').textContent = data.elapsed_time;
+
+                    // Live feed - assume backend sends full accumulated text or we append. 
+                    // For simplicity, let's assume backend sends full text or we handle it. 
+                    // Better: Backend sends full text or the latest chunk. 
+                    // Let's assume backend sends full `live_text` for now to be safe and simple 
+                    // or we just render what we get.
+                    if (data.live_text) {
+                        document.getElementById('outputBox').innerHTML = `<span style="color:var(--t1);font-style:normal;direction:${data.rtl ? 'rtl' : 'ltr'};display:block;white-space:pre-wrap;">${data.live_text}</span><span class="cursor-blink"></span>`;
+                        // Auto scroll to bottom
+                        const outBox = document.getElementById('outputBox');
+                        outBox.scrollTop = outBox.scrollHeight;
+                    }
+
+                    // Status message
+                    if (data.status_message) {
+                        // Only update if it's significant or different? 
+                        // Ideally we have a separate status line. 
+                        // For now we might override our manual setStatus, 
+                        // but let's trust the backend's status message if it's interesting.
+                        // setStatus(data.status_message); 
+                        // actually backend status might be too verbose ("Translating chunk X/Y..."), 
+                        // let's just use it.
+                        document.getElementById('statusBox').innerHTML = '<span class="status-dot"></span>' + data.status_message;
+                    }
+
+                    // Check if done
+                    if (!data.running && !data.error && data.progress >= 100) {
+                        stopPolling();
+                        isTranslationRunning = false;
+                        setStatus('✅ Translation complete! <strong style="color:var(--green)">Click Export & Download</strong> to save.');
+                    }
+
+                    if (data.error) {
+                        stopPolling();
+                        isTranslationRunning = false;
+                        setStatus(`❌ Error: ${data.error}`);
+                    }
+
+                } catch (e) {
+                    console.error("Polling error", e);
+                }
+            }, 1000);
+        }
+
+        function stopPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = null;
+        }
+
+        // --- Controls ---
+        function pauseTranslation() {
+            if (!isTranslationRunning) return;
+
+            fetch(`${API_BASE}/pause`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    isPaused = data.paused;
+                    document.querySelector('.btn-secondary').textContent = isPaused ? '▶  Resume' : '⏸  Pause';
+                    setStatus(isPaused ? '⏸ Paused' : '▶️ Resumed');
+                });
+        }
+
+        function stopTranslation() {
+            if (!isTranslationRunning) return;
+
+            fetch(`${API_BASE}/stop`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    stopPolling();
+                    isTranslationRunning = false;
+                    setStatus('⏹ Stopped by user.');
+                    document.querySelector('.btn-secondary').textContent = '⏸  Pause';
+                });
+        }
+
+        function exportDoc() {
+            if (!isTranslationRunning && !currentFile) {
+                setStatus('⚠️ No translation available to export.');
+                return;
+            }
+
+            setStatus('📦 Preparing download...');
+            window.location.href = `${API_BASE}/export`;
+        }
+
+        // Drag & drop
+        const zone = document.getElementById('uploadZone');
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--acc)'; zone.style.background = 'rgba(90,110,255,.07)'; });
+        zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; zone.style.background = ''; });
+        zone.addEventListener('drop', e => {
+            e.preventDefault(); zone.style.borderColor = ''; zone.style.background = '';
+            const f = e.dataTransfer.files[0];
+            if (f) {
+                // Manually trigger the input logic
+                const dt = new DataTransfer();
+                dt.items.add(f);
+                document.getElementById('fileInput').files = dt.files;
+                fileChosen(document.getElementById('fileInput'));
+            }
+        });
+    </script>
+</body>
+
+</html>

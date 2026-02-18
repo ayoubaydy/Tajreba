@@ -1,0 +1,12 @@
+gradio
+tqdm
+python-docx
+psutil
+gputil
+setuptools
+llama-cpp-python
+huggingface_hub
+flask
+beautifulsoup4
+pymupdf
+ebooklib
